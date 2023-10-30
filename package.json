@@ -1,0 +1,25 @@
+{
+	"name": "raw",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.ts",
+	"scripts": {
+		"start": "ts-node -r tsconfig-paths/register src/Bot.ts",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Carlo Nicora",
+	"license": "ISC",
+	"dependencies": {
+		"@prisma/client": "^5.4.2",
+		"discord.js": "^14.13.0",
+		"dotenv": "^16.3.1"
+	},
+	"devDependencies": {
+		"@types/node": "^20.8.9",
+		"@types/uuid": "^9.0.4",
+		"prisma": "^5.4.2",
+		"ts-node": "^10.9.1",
+		"tsconfig-paths": "^4.2.0",
+		"typescript": "^5.2.2"
+	}
+}

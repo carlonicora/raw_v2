@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Trait {
+  body
+  mind
+  spirit
+}
+
+model campaigns {
+  campaignId      Bytes   @id @db.Binary(16)
+  serverId        String  @unique @db.VarChar(32)
+  discordUserId   String  @db.VarChar(32)
+  name            String  @db.VarChar(255)
+  characters      characters[]
+
+  @@index([campaignId], name: "campaignId")
+}
+
+model characters {
+  characterId     Bytes   @id @db.Binary(16)
+  discordUserId   String  @unique @db.VarChar(32)
+  campaignId      Bytes   @db.Binary(16)
+  name            String  @db.VarChar(255)
+  body            Int     @default(0)
+  mind            Int     @default(0)
+  spirit          Int     @default(0)
+  bonus           Int     @default(0)
+  maxHealth       Int     @default(0)
+  currentHealth   Int     @default(0)
+  thumbnail       String? @db.VarChar(255)
+  characterAbilities characterAbilities[]
+  campaign        campaigns @relation(fields: [campaignId], references: [campaignId])
+
+  @@index([characterId], name: "characterId")
+}
+
+model abilities {
+  abilityId       Bytes   @id @db.Binary(16)
+  trait           Trait
+  name            String  @db.VarChar(32)
+  characterAbilities characterAbilities[]
+
+  @@index([abilityId], name: "abilityId")
+}
+
+model characterAbilities {
+  characterAbilityId Bytes   @id @db.Binary(16)
+  characterId        Bytes   @db.Binary(16)
+  abilityId          Bytes   @db.Binary(16)
+  value              Int     @default(0)
+  ability            abilities @relation(fields: [abilityId], references: [abilityId])
+  character          characters @relation(fields: [characterId], references: [characterId])
+
+  @@index([characterAbilityId], name: "characterAbilityId")
+}
