@@ -184,7 +184,7 @@ const createCharacter = async (
 		content
 			.setColor("#ff0000")
 			.setTitle("Error")
-			.setDescription(`${bufferToUuid(campaign.campaignId)} ${interaction.user.id} ${name}`);
+			.setDescription(`${bufferToUuid(campaign.campaignId)} ${interaction.user.id} ${name} ${error}`);
 	} finally {
 		await interaction.followUp({
 			embeds: [content],
