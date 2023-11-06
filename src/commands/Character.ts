@@ -164,23 +164,32 @@ const createCharacter = async (
 	const name: string | undefined = interaction.options.get("name")?.value as string;
 	if (!name || name === "") throw new Error("Missing character name");
 
-	const character: characters = await prisma.characters.create({
-		data: {
-			characterId: uuidToBuffer(randomUUID()),
-			campaignId: campaign.campaignId,
-			discordUserId: interaction.user.id,
-			name: name,
-		},
-	});
+	const content = new EmbedBuilder();
 
-	const content = new EmbedBuilder()
-		.setColor("#00ff00")
-		.setTitle(character.name)
-		.setDescription(`Character ${character.name} successfully created`);
+	try {
+		const character: characters = await prisma.characters.create({
+			data: {
+				characterId: uuidToBuffer(randomUUID()),
+				campaignId: campaign.campaignId,
+				discordUserId: interaction.user.id,
+				name: name,
+			},
+		});
 
-	await interaction.followUp({
-		embeds: [content],
-	});
+		content
+			.setColor("#00ff00")
+			.setTitle(character.name)
+			.setDescription(`Character ${character.name} successfully created`);
+	} catch (error) {
+		content
+			.setColor("#ff0000")
+			.setTitle("Error")
+			.setDescription(`${bufferToUuid(campaign.campaignId)} ${interaction.user.id} ${name}`);
+	} finally {
+		await interaction.followUp({
+			embeds: [content],
+		});
+	}
 };
 
 const showCharacter = async (
