@@ -28,7 +28,7 @@ model campaigns {
 
 model characters {
   characterId     Bytes   @id @db.Binary(16)
-  discordUserId   String  @unique @db.VarChar(32)
+  discordUserId   String  @db.VarChar(32)
   campaignId      Bytes   @db.Binary(16)
   name            String  @db.VarChar(255)
   body            Int     @default(0)
