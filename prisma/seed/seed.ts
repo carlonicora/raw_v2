@@ -8,7 +8,7 @@ async function main() {
 
 	createAbility("0344a352-9c29-4975-9684-ac70b0416814", Trait.body, "Athletics");
 	createAbility("3004f56a-e463-4154-904f-72d670da20f2", Trait.body, "Drive");
-	createAbility("38d7fc45-0b15-4b40-bbbf-ec5a250f6f66", Trait.body, "Firearms");
+	createAbility("38d7fc45-0b15-4b40-bbbf-ec5a250f6f66", Trait.body, "Ranged");
 	createAbility("079eaebd-e349-456b-bd17-dcbc1e03ab00", Trait.body, "Intimidate");
 	createAbility("22ec12ca-6cad-42ab-9372-e0a25de355cf", Trait.body, "Melee");
 	createAbility("346ccae3-2b53-4a8c-aa43-06c47a4f823d", Trait.body, "Repair");

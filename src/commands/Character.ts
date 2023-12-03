@@ -59,7 +59,7 @@ export const Character: Command = {
 						{ name: "Drive", value: "3004f56a-e463-4154-904f-72d670da20f2" },
 						{ name: "Education", value: "223d87fa-b73c-45cb-8ccf-25c5201619a9" },
 						{ name: "Empathy", value: "8db0926c-586c-4aeb-9cc7-1f6bda44fd4e" },
-						{ name: "Firearms", value: "38d7fc45-0b15-4b40-bbbf-ec5a250f6f66" },
+						{ name: "Ranged", value: "38d7fc45-0b15-4b40-bbbf-ec5a250f6f66" },
 						{ name: "Intimidate", value: "079eaebd-e349-456b-bd17-dcbc1e03ab00" },
 						{ name: "Investigation", value: "d52522b7-c071-434f-93bd-72e0825063fc" },
 						{ name: "Language", value: "3d401030-08e6-4828-9164-082555ebbfee" },
