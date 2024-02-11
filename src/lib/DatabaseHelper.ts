@@ -42,7 +42,7 @@ export class DatabaseHelper {
 		const respose = await this.client.characters.findFirst({
 			where: {
 				campaignId: campaign.campaignId,
-				discordUserId: interaction.user.id,
+				discordUserId: discordUserId ?? interaction.user.id,
 			},
 			include: {
 				characterAbilities: true,
