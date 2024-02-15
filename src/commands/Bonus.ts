@@ -209,6 +209,8 @@ const rollBonus = async (
 	const character = await database.getCharacter(interaction);
 	const user: User = interaction.user;
 
+	if (character.bonus <= 0) throw new Error("You do not have bonus points to roll your ability.");
+
 	const ability = database.abilities.find(
 		(ability: abilities) => bufferToUuid(ability.abilityId) === interaction.options.get("ability")?.value
 	);
@@ -319,6 +321,8 @@ const upBonus = async (
 	const campaign = await database.getCampaign(interaction);
 	const character = await database.getCharacter(interaction);
 	const user: User = interaction.user;
+
+	if (character.bonus <= 0) throw new Error("You do not have bonus points to up your ability.");
 
 	const ability = database.abilities.find(
 		(ability: abilities) => bufferToUuid(ability.abilityId) === interaction.options.get("ability")?.value
