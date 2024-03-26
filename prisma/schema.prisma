@@ -10,56 +10,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Trait {
-  body
-  mind
-  spirit
-}
-
 model campaigns {
-  campaignId      Bytes   @id @db.Binary(16)
-  serverId        String  @unique @db.VarChar(32)
-  discordUserId   String  @db.VarChar(32)
-  name            String  @db.VarChar(255)
-  characters      characters[]
+  campaignId          Bytes   @id @db.Binary(16)
+  serverId            String  @unique @db.VarChar(32)
+  discordUserId       String  @db.VarChar(32)
+  name                String  @db.VarChar(255)
+
+  characters          characters[]
 
   @@index([campaignId], name: "campaignId")
 }
 
 model characters {
-  characterId     Bytes   @id @db.Binary(16)
-  discordUserId   String  @db.VarChar(32)
-  campaignId      Bytes   @db.Binary(16)
-  name            String  @db.VarChar(255)
-  body            Int     @default(0)
-  mind            Int     @default(0)
-  spirit          Int     @default(0)
-  bonus           Int     @default(0)
-  maxHealth       Int     @default(0)
-  currentHealth   Int     @default(0)
-  thumbnail       String? @db.VarChar(255)
-  characterAbilities characterAbilities[]
-  campaign        campaigns @relation(fields: [campaignId], references: [campaignId])
+  characterId         Bytes   @id @db.Binary(16)
+  discordUserId       String  @db.VarChar(32)
+  campaignId          Bytes   @db.Binary(16)
+  name                String  @db.VarChar(255)
+  bonus               Int     @default(0)
+  damages             Int     @default(0)
+  heroPoints          Int     @default(50)
+  defaultWeaponDamage Int  @default(0)
+  thumbnail           String? @db.VarChar(255)
+
+  characterAbilities  characterAbilities[]
+  campaign            campaigns @relation(fields: [campaignId], references: [campaignId])
 
   @@index([characterId], name: "characterId")
 }
 
-model abilities {
-  abilityId       Bytes   @id @db.Binary(16)
-  trait           Trait
-  name            String  @db.VarChar(32)
-  characterAbilities characterAbilities[]
-
-  @@index([abilityId], name: "abilityId")
+enum AbilityType {
+  Athletics
+  Arts
+  Drive
+  Education
+  Empathy
+  Persuasion
+  Investigation
+  Medicine
+  Melee
+  Occult
+  Perception
+  Ranged
+  Stealth
+  Technology
+  Willpower
 }
 
 model characterAbilities {
-  characterAbilityId Bytes   @id @db.Binary(16)
-  characterId        Bytes   @db.Binary(16)
-  abilityId          Bytes   @db.Binary(16)
-  value              Int     @default(0)
-  ability            abilities @relation(fields: [abilityId], references: [abilityId])
-  character          characters @relation(fields: [characterId], references: [characterId])
+  characterAbilityId    Bytes      @id @db.Binary(16)
+  characterId           Bytes      @db.Binary(16)
+  ability               AbilityType
+  value                 Int        @default(0)
+
+  character             characters @relation(fields: [characterId], references: [characterId])
 
   @@index([characterAbilityId], name: "characterAbilityId")
+  @@unique([characterId, ability], name: "characterId_ability")
 }

@@ -1,9 +1,7 @@
-import { PrismaClient, abilities, campaigns, characterAbilities, characters } from "@prisma/client";
+import { PrismaClient, campaigns, characterAbilities, characters } from "@prisma/client";
 import { CommandInteraction } from "discord.js";
 
 export class DatabaseHelper {
-	abilities: abilities[] = [];
-
 	constructor(private client: PrismaClient) {}
 
 	private async checkServer(interaction: CommandInteraction): Promise<void> {
@@ -22,12 +20,6 @@ export class DatabaseHelper {
 		if (respose === null) throw new Error("The server does not have a campaign");
 
 		return respose;
-	}
-
-	async loadAbilities(): Promise<void> {
-		this.abilities = await this.client.abilities.findMany({
-			orderBy: [{ trait: "asc" }, { name: "asc" }],
-		});
 	}
 
 	async getCharacter(

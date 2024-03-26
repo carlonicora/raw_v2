@@ -1,8 +1,9 @@
 import { Command } from "@/Command";
+import { AbilityHelper } from "@/helpers/AbilityHelper";
 import { Colour } from "@/lib/ColourHelper";
 import { DatabaseHelper } from "@/lib/DatabaseHelper";
-import { bufferToUuid, uuidToBuffer } from "@/lib/prismaHelpers";
-import { PrismaClient, Trait, abilities, characterAbilities, characters } from "@prisma/client";
+import { uuidToBuffer } from "@/lib/prismaHelpers";
+import { AbilityType, PrismaClient, characterAbilities, characters } from "@prisma/client";
 import { randomUUID } from "crypto";
 import {
 	ApplicationCommandOptionType,
@@ -52,26 +53,7 @@ export const Bonus: Command = {
 					description: "Select the ability",
 					type: ApplicationCommandOptionType.String,
 					required: true,
-					choices: [
-						{ name: "Athletics", value: "0344a352-9c29-4975-9684-ac70b0416814" },
-						{ name: "Craft", value: "f12396ed-700d-43c8-9baa-db77511f6652" },
-						{ name: "Drive", value: "3004f56a-e463-4154-904f-72d670da20f2" },
-						{ name: "Education", value: "223d87fa-b73c-45cb-8ccf-25c5201619a9" },
-						{ name: "Empathy", value: "8db0926c-586c-4aeb-9cc7-1f6bda44fd4e" },
-						{ name: "Ranged", value: "38d7fc45-0b15-4b40-bbbf-ec5a250f6f66" },
-						{ name: "Intimidate", value: "079eaebd-e349-456b-bd17-dcbc1e03ab00" },
-						{ name: "Investigation", value: "d52522b7-c071-434f-93bd-72e0825063fc" },
-						{ name: "Language", value: "3d401030-08e6-4828-9164-082555ebbfee" },
-						{ name: "Medicine", value: "8a831ee6-7c0b-4bd5-a4fc-a4374c6be37d" },
-						{ name: "Melee", value: "22ec12ca-6cad-42ab-9372-e0a25de355cf" },
-						{ name: "Occult", value: "a2eb2316-455b-453b-a22e-20080a28a05a" },
-						{ name: "Perception", value: "0e8da997-a569-4d9d-a6e3-bfa7741f9d5d" },
-						{ name: "Persuasion", value: "8b7665e4-4ce7-4945-b2a2-ad68584f7ec0" },
-						{ name: "Repair", value: "346ccae3-2b53-4a8c-aa43-06c47a4f823d" },
-						{ name: "Stealth", value: "21402ae4-c62d-4e4c-b2b6-1aed3d7a2c76" },
-						{ name: "Technology", value: "0fcfbe94-92b1-49ec-bd7e-ce0f25cff52d" },
-						{ name: "Willpower", value: "ba934d8e-4e1c-4fa0-8076-fae8fdb3dd7c" },
-					],
+					choices: AbilityHelper.getAbilityList(),
 				},
 			],
 		},
@@ -85,26 +67,7 @@ export const Bonus: Command = {
 					description: "Select the ability",
 					type: ApplicationCommandOptionType.String,
 					required: true,
-					choices: [
-						{ name: "Athletics", value: "0344a352-9c29-4975-9684-ac70b0416814" },
-						{ name: "Craft", value: "f12396ed-700d-43c8-9baa-db77511f6652" },
-						{ name: "Drive", value: "3004f56a-e463-4154-904f-72d670da20f2" },
-						{ name: "Education", value: "223d87fa-b73c-45cb-8ccf-25c5201619a9" },
-						{ name: "Empathy", value: "8db0926c-586c-4aeb-9cc7-1f6bda44fd4e" },
-						{ name: "Ranged", value: "38d7fc45-0b15-4b40-bbbf-ec5a250f6f66" },
-						{ name: "Intimidate", value: "079eaebd-e349-456b-bd17-dcbc1e03ab00" },
-						{ name: "Investigation", value: "d52522b7-c071-434f-93bd-72e0825063fc" },
-						{ name: "Language", value: "3d401030-08e6-4828-9164-082555ebbfee" },
-						{ name: "Medicine", value: "8a831ee6-7c0b-4bd5-a4fc-a4374c6be37d" },
-						{ name: "Melee", value: "22ec12ca-6cad-42ab-9372-e0a25de355cf" },
-						{ name: "Occult", value: "a2eb2316-455b-453b-a22e-20080a28a05a" },
-						{ name: "Perception", value: "0e8da997-a569-4d9d-a6e3-bfa7741f9d5d" },
-						{ name: "Persuasion", value: "8b7665e4-4ce7-4945-b2a2-ad68584f7ec0" },
-						{ name: "Repair", value: "346ccae3-2b53-4a8c-aa43-06c47a4f823d" },
-						{ name: "Stealth", value: "21402ae4-c62d-4e4c-b2b6-1aed3d7a2c76" },
-						{ name: "Technology", value: "0fcfbe94-92b1-49ec-bd7e-ce0f25cff52d" },
-						{ name: "Willpower", value: "ba934d8e-4e1c-4fa0-8076-fae8fdb3dd7c" },
-					],
+					choices: AbilityHelper.getAbilityList(),
 				},
 			],
 		},
@@ -211,33 +174,13 @@ const rollBonus = async (
 
 	if (character.bonus <= 0) throw new Error("You do not have bonus points to roll your ability.");
 
-	const ability = database.abilities.find(
-		(ability: abilities) => bufferToUuid(ability.abilityId) === interaction.options.get("ability")?.value
-	);
+	const abilityName: AbilityType = (interaction.options.get("ability")?.value?.toString() ?? "") as AbilityType;
 
-	if (!ability) throw new Error("Ability not found");
+	if (!AbilityHelper.checkAbilityExists(abilityName)) throw new Error("Ability not found");
 
 	const characterAbility = character.characterAbilities.find(
-		(characterAbility: characterAbilities) =>
-			bufferToUuid(ability.abilityId) === bufferToUuid(characterAbility.abilityId)
+		(characterAbility: characterAbilities) => characterAbility.ability === abilityName
 	);
-
-	let traitName: string = "";
-	let traitValue: number = 0;
-	switch (ability.trait) {
-		case Trait.body:
-			traitName = "Body";
-			traitValue = character.body;
-			break;
-		case Trait.mind:
-			traitName = "Mind";
-			traitValue = character.mind;
-			break;
-		case Trait.spirit:
-			traitName = "Spirit";
-			traitValue = character.spirit;
-			break;
-	}
 
 	await prisma.characters.updateMany({
 		where: {
@@ -252,9 +195,9 @@ const rollBonus = async (
 	});
 
 	const roll = getRoll();
-	const abilityValue = characterAbility?.value ?? 0;
+	let abilityValue = characterAbility?.value ?? 0;
 
-	const total = roll - abilityValue - traitValue;
+	const total = roll - abilityValue;
 	let successes = total < 0 ? 0 : Math.floor(total / 20) + 1;
 
 	if (roll === 100) successes *= 2;
@@ -276,32 +219,39 @@ const rollBonus = async (
 				data: {
 					characterAbilityId: uuidToBuffer(randomUUID()),
 					characterId: character.characterId,
-					abilityId: ability.abilityId,
+					ability: abilityName,
 					value: successes,
 				},
 			});
 		}
+
+		abilityValue += successes;
 	}
 
 	let description = `${user}, your character ${character.name} ${
 		successes > 0 ? "successfuly increased" : "failed to increase"
-	} their ${ability.name} ability${successes > 0 ? " by " + successes.toString() + " points" : ""}.`;
+	} their ${abilityName} ability${successes > 0 ? " by " + successes.toString() + " points" : ""}.`;
 
 	if (successes > 0) description += `It is now at ${abilityValue + successes} points.`;
 
 	const content = new EmbedBuilder()
 		.setColor(successes > 0 ? Colour.Green : Colour.Red)
-		.setTitle(`${successes > 0 ? "Successfully increased " : "Failed to increase "} ${ability.name}`)
+		.setTitle(`${successes > 0 ? "Successfully increased " : "Failed to increase "} ${abilityName}`)
 		.setDescription(description);
 
 	content.addFields({
 		name: "Roll",
 		value: `Dice: ${roll}${roll === 100 ? " (**Critical)**" : ""}
-                Current Value: ${abilityValue + traitValue}
-- ${traitName}: ${traitValue}
-- Ability: ${abilityValue}
----
-Difference: ${total} (${successes} successes)`,
+                Current Value: ${abilityValue}
+				Difference: ${total} (${successes} successes)
+				---
+				Your new ${abilityName} score is ${abilityValue + successes}
+				
+				You ${
+					character.bonus <= 1
+						? "are out of bonus points"
+						: "still have " + (character.bonus - 1) + " bonus points left."
+				}`,
 		inline: false,
 	});
 
@@ -324,15 +274,12 @@ const upBonus = async (
 
 	if (character.bonus <= 0) throw new Error("You do not have bonus points to up your ability.");
 
-	const ability = database.abilities.find(
-		(ability: abilities) => bufferToUuid(ability.abilityId) === interaction.options.get("ability")?.value
-	);
+	const abilityName: AbilityType = (interaction.options.get("ability")?.value?.toString() ?? "") as AbilityType;
 
-	if (!ability) throw new Error("Ability not found");
+	if (!AbilityHelper.checkAbilityExists(abilityName)) throw new Error("Ability not found");
 
 	const characterAbility = character.characterAbilities.find(
-		(characterAbility: characterAbilities) =>
-			bufferToUuid(ability.abilityId) === bufferToUuid(characterAbility.abilityId)
+		(characterAbility: characterAbilities) => characterAbility.ability === abilityName
 	);
 
 	if (!characterAbility) throw new Error("You can up only an ability your character already have. Roll for it first.");
@@ -360,12 +307,12 @@ const upBonus = async (
 		},
 	});
 
-	let description = `${user}, your character ${character.name}  successfuly increased their ${ability.name} ability by 1 points.`;
+	let description = `${user}, your character ${character.name}  successfuly increased their ${abilityName} ability by 1 points.`;
 	description += `It is now at ${characterAbility.value + 1} points.`;
 
 	const content = new EmbedBuilder()
 		.setColor(Colour.Green)
-		.setTitle(`Successfully increased ${ability.name}`)
+		.setTitle(`Successfully increased ${abilityName}`)
 		.setDescription(description);
 
 	if (character.thumbnail && character.thumbnail !== "") content.setThumbnail(character.thumbnail);
