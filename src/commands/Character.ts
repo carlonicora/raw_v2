@@ -202,7 +202,7 @@ const showCharacter = async (
 		let abilityName = ability.name;
 		abilityName += " ".repeat(maxLength + 1 - abilityName.length);
 
-		valueField += `${abilityName} - ${value} [${passive}]\n`;
+		valueField += `\`${abilityName}\` ${value} \`${passive}\`\n`;
 
 		abilitiesField += `${ability.name}\n`;
 		abilitiesValueField += `${characterAbility?.value.toString() ?? "0"}${
@@ -215,7 +215,7 @@ const showCharacter = async (
 
 	fields.push({
 		name: `Ability`,
-		value: "```" + valueField + "```",
+		value: valueField,
 		inline: true,
 	});
 
