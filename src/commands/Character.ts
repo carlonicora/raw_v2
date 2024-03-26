@@ -194,7 +194,7 @@ const showCharacter = async (
 		let value = characterAbility?.value.toString() ?? "0";
 		if (value.length === 1) value = " " + value;
 
-		valueField += `${value} [*${passive}*] - ${ability.name}\n`;
+		valueField += `${ability.name} - **${value}** [*${passive}*]\n`;
 
 		abilitiesField += `${ability.name}\n`;
 		abilitiesValueField += `${characterAbility?.value.toString() ?? "0"}${
