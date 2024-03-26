@@ -184,6 +184,11 @@ const showCharacter = async (
 
 	let valueField = "";
 
+	let maxLength: number = 0;
+	AbilityHelper.getAbilityList().forEach((ability: { name: string; value: string }) => {
+		if (ability.name.length > maxLength) maxLength = ability.name.length;
+	});
+
 	AbilityHelper.getAbilityList().forEach((ability: { name: string; value: string }) => {
 		const characterAbility = character.characterAbilities.find(
 			(characterAbility: characterAbilities) => characterAbility.ability === ability.name
@@ -194,7 +199,10 @@ const showCharacter = async (
 		let value = characterAbility?.value.toString() ?? "0";
 		if (value.length === 1) value = " " + value;
 
-		valueField += `${ability.name} - **${value}** [*${passive}*]\n`;
+		let abilityName = ability.name;
+		abilityName += " ".repeat(maxLength + 1 - abilityName.length);
+
+		valueField += `${abilityName} - ${value} [${passive}]\n`;
 
 		abilitiesField += `${ability.name}\n`;
 		abilitiesValueField += `${characterAbility?.value.toString() ?? "0"}${
