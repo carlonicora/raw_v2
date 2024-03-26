@@ -234,12 +234,14 @@ const showCharacter = async (
 	const totalHealth = 20 + healthModifier;
 	const currentHealth = totalHealth - character.damages;
 
+	let attributes: string = "```Hero Points    ``` **" + character.heroPoints.toString() + "**\n";
+	attributes += "```Bonus Points   ``` **" + character.bonus.toString() + "**\n";
+	attributes += "```Health         ``` **" + currentHealth.toString() + "**/" + totalHealth.toString() + "\n";
+	attributes += "```Default Attack ``` **" + character.defaultWeaponDamage.toString() + "**\n";
+
 	fields.push({
 		name: `Attributes`,
-		value: `**${character.heroPoints}** Hero pts
-				**${character.bonus}** Bonus pts
-				**${currentHealth}** out of ${totalHealth} Health
-				**${character.defaultWeaponDamage}** Default Attack Damage`,
+		value: attributes,
 		inline: false,
 	});
 
