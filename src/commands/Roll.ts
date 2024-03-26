@@ -35,6 +35,12 @@ export const Roll: Command = {
 					type: ApplicationCommandOptionType.Integer,
 					required: false,
 				},
+				{
+					name: "damage",
+					description: "Set the damage of the weapon if it's an attack roll",
+					type: ApplicationCommandOptionType.Integer,
+					required: false,
+				},
 			],
 		},
 		{
@@ -95,8 +101,21 @@ const rollAbility = async (
 
 	const successes: number = result === 0 ? 0 : Math.floor(result / 20);
 
-	const description = `Dice: ${roll}${isCritical ? " (**Critical: +20)**" : isFumble ? " (**Fumble: -20)**" : ""}
+	let description = `Dice: ${roll}${isCritical ? " (**Critical: +20)**" : isFumble ? " (**Fumble: -20)**" : ""}
 	Ability: ${abilityValue}${bonus ? `\nBonus: ${bonus}` : ""}`;
+
+	if (
+		(abilityName === AbilityType.Melee || abilityName === AbilityType.Ranged) &&
+		(interaction.options.get("damage") || character.defaultWeaponDamage !== 0)
+	) {
+		let damage: number = (interaction.options.get("damage")?.value ?? 0) as number;
+		if (damage === 0) damage = character.defaultWeaponDamage;
+
+		if (damage > 0) {
+			const inflictedDamage: number = damage * successes;
+			description += `\n\nDamage: ${inflictedDamage}`;
+		}
+	}
 
 	const content = new EmbedBuilder()
 		.setColor(successColour(successes) as ColorResolvable)
