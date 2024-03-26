@@ -214,7 +214,7 @@ const showCharacter = async (
 	});
 
 	fields.push({
-		name: `Ability`,
+		name: `Abilities`,
 		value: valueField,
 		inline: true,
 	});
