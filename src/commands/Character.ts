@@ -182,12 +182,17 @@ const showCharacter = async (
 	let abilitiesField = "";
 	let abilitiesValueField = "";
 
+	let valueField = "";
+
 	AbilityHelper.getAbilityList().forEach((ability: { name: string; value: string }) => {
 		const characterAbility = character.characterAbilities.find(
 			(characterAbility: characterAbilities) => characterAbility.ability === ability.name
 		);
 
 		const passive = Math.floor((characterAbility?.value ?? 0) / 20);
+
+		valueField += `${characterAbility?.value.toString() ?? "0"} [${passive}] - ${ability.name}\n`;
+
 		abilitiesField += `${ability.name}\n`;
 		abilitiesValueField += `${characterAbility?.value.toString() ?? "0"}${
 			passive === 0 ? "" : " (*" + passive.toString() + "*)"
@@ -199,15 +204,21 @@ const showCharacter = async (
 
 	fields.push({
 		name: `Ability`,
-		value: abilitiesField,
+		value: valueField,
 		inline: true,
 	});
 
-	fields.push({
-		name: `Value (passive)`,
-		value: abilitiesValueField,
-		inline: true,
-	});
+	// fields.push({
+	// 	name: `Ability`,
+	// 	value: abilitiesField,
+	// 	inline: true,
+	// });
+
+	// fields.push({
+	// 	name: `Value (passive)`,
+	// 	value: abilitiesValueField,
+	// 	inline: true,
+	// });
 
 	const totalHealth = 20 + healthModifier;
 	const currentHealth = totalHealth - character.damages;
