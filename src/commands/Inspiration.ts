@@ -22,6 +22,12 @@ export const Inspiration: Command = {
 			type: ApplicationCommandOptionType.User,
 			required: true,
 		},
+		{
+			name: "reason",
+			description: "Why does the player deserve an inspiration token?",
+			type: ApplicationCommandOptionType.String,
+			required: false,
+		},
 	],
 	run: async (client: Client, interaction: CommandInteraction, prisma: PrismaClient, database: DatabaseHelper) => {
 		await assignInspiration(client, interaction, prisma, database);
@@ -51,10 +57,14 @@ const assignInspiration = async (
 		},
 	});
 
+	let description = `${discordUser}, your character ${character.name} received an inspration and 3 hero points.`;
+	const reason: string | null = interaction.options.get("reason")?.value as string;
+	if (reason) description += `\n\nReason: ${reason}`;
+
 	const content = new EmbedBuilder()
 		.setColor(Colour.Green)
 		.setTitle(`Inspiration token rewarded  Assigned to ${character.name}`)
-		.setDescription(`${discordUser}, your character ${character.name} received an inspration and 3 hero points.`);
+		.setDescription(description);
 
 	if (character.thumbnail && character.thumbnail !== "") content.setThumbnail(character.thumbnail);
 
