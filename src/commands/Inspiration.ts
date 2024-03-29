@@ -37,7 +37,7 @@ const assignInspiration = async (
 	const discordUser: User | null = interaction.options.getUser("player");
 	if (!discordUser) throw new Error("You must specify a player");
 
-	const character = await database.getCharacter(interaction, discordUser?.id);
+	const character = await database.getCharacter(interaction, discordUser?.id, true);
 	if (!character) throw new Error("The player does not have a character");
 
 	await prisma.characters.update({

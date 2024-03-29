@@ -24,11 +24,12 @@ export class DatabaseHelper {
 
 	async getCharacter(
 		interaction: CommandInteraction,
-		discordUserId?: string | undefined
+		discordUserId?: string | undefined,
+		canEditOtherUsers: boolean = false
 	): Promise<characters & { characterAbilities: characterAbilities[] }> {
 		const campaign: campaigns = await this.getCampaign(interaction);
 
-		if (discordUserId && campaign.discordUserId !== interaction.user.id)
+		if (discordUserId && campaign.discordUserId !== interaction.user.id && !canEditOtherUsers)
 			throw new Error("You don't have permission to see this character");
 
 		const respose = await this.client.characters.findFirst({
