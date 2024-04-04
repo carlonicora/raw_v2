@@ -29,7 +29,9 @@ model characters {
   bonus               Int     @default(0)
   damages             Int     @default(0)
   heroPoints          Int     @default(50)
-  defaultWeaponDamage Int  @default(0)
+  manaUsed            Int     @default(0)
+  defaultWeaponDamage Int     @default(0)
+  defaultArmourValue  Int     @default(0)
   thumbnail           String? @db.VarChar(255)
 
   characterAbilities  characterAbilities[]

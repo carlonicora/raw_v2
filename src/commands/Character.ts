@@ -1,329 +1,358 @@
 import { Command } from "@/Command";
 import { AbilityHelper } from "@/helpers/AbilityHelper";
+import { AttributesOutputHelper } from "@/helpers/AttributesOutputHelper";
+import { Colour } from "@/lib/ColourHelper";
 import { DatabaseHelper } from "@/lib/DatabaseHelper";
 import { bufferToUuid, uuidToBuffer } from "@/lib/prismaHelpers";
-import { AbilityType, PrismaClient, characterAbilities, characters } from "@prisma/client";
+import {
+  AbilityType,
+  PrismaClient,
+  characterAbilities,
+  characters,
+} from "@prisma/client";
 import { randomUUID } from "crypto";
 import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	Client,
-	CommandInteraction,
-	EmbedBuilder,
-	User,
+  ApplicationCommandOptionType,
+  ApplicationCommandType,
+  Client,
+  CommandInteraction,
+  EmbedBuilder,
+  User,
 } from "discord.js";
 
 export const Character: Command = {
-	name: "character",
-	description: "Shows the detail of your character",
-	type: ApplicationCommandType.ChatInput,
-	options: [
-		{
-			name: "details",
-			description: "Show the character record sheet",
-			type: ApplicationCommandOptionType.Subcommand,
-			options: [
-				{
-					name: "player",
-					description: "Specify the player",
-					type: ApplicationCommandOptionType.User,
-					required: false,
-				},
-			],
-		},
-		{
-			name: "create",
-			description: "Create a new character",
-			type: ApplicationCommandOptionType.Subcommand,
-			options: [
-				{
-					name: "name",
-					description: "Specify the name of the character",
-					type: ApplicationCommandOptionType.String,
-					required: true,
-				},
-			],
-		},
-		{
-			name: "ability",
-			description: "Set an ability of your character",
-			type: ApplicationCommandOptionType.Subcommand,
-			options: [
-				{
-					name: "name",
-					description: "Select the ability",
-					type: ApplicationCommandOptionType.String,
-					required: true,
-					choices: AbilityHelper.getAbilityList(),
-				},
-				{
-					name: "value",
-					description: "Set the value of an ability",
-					type: ApplicationCommandOptionType.Integer,
-					required: true,
-				},
-			],
-		},
-		{
-			name: "set",
-			description: "Set the details of your character",
-			type: ApplicationCommandOptionType.Subcommand,
-			options: [
-				{
-					name: "name",
-					description: "The name of the character",
-					type: ApplicationCommandOptionType.String,
-					required: false,
-				},
-				{
-					name: "damage",
-					description: "Add a damage amount to the character",
-					type: ApplicationCommandOptionType.Integer,
-					required: false,
-				},
-				{
-					name: "thumbnail",
-					description: "Add or replace the character thumbnail",
-					type: ApplicationCommandOptionType.String,
-					required: false,
-				},
-				{
-					name: "weapon",
-					description: "Set the default weapon damage",
-					type: ApplicationCommandOptionType.Integer,
-					required: false,
-				},
-			],
-		},
-	],
-	run: async (client: Client, interaction: CommandInteraction, prisma: PrismaClient, database: DatabaseHelper) => {
-		switch (interaction.options.data[0]?.name) {
-			case "create":
-				await createCharacter(client, interaction, prisma, database);
-				break;
-			case "details":
-				await showCharacter(client, interaction, prisma, database);
-				break;
-			case "set":
-				await setCharacter(client, interaction, prisma, database);
-				break;
-			case "ability":
-				await setAbility(client, interaction, prisma, database);
-				break;
-		}
-	},
+  name: "character",
+  description: "Shows the detail of your character",
+  type: ApplicationCommandType.ChatInput,
+  options: [
+    {
+      name: "details",
+      description: "Show the character record sheet",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "player",
+          description: "Specify the player",
+          type: ApplicationCommandOptionType.User,
+          required: false,
+        },
+      ],
+    },
+    {
+      name: "create",
+      description: "Create a new character",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "name",
+          description: "Specify the name of the character",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "ability",
+      description: "Set an ability of your character",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "name",
+          description: "Select the ability",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+          choices: AbilityHelper.getAbilityList(),
+        },
+        {
+          name: "value",
+          description: "Set the value of an ability",
+          type: ApplicationCommandOptionType.Integer,
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "set",
+      description: "Set the details of your character",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "name",
+          description: "The name of the character",
+          type: ApplicationCommandOptionType.String,
+          required: false,
+        },
+        {
+          name: "damage",
+          description: "Add a damage amount to the character",
+          type: ApplicationCommandOptionType.Integer,
+          required: false,
+        },
+        {
+          name: "thumbnail",
+          description: "Add or replace the character thumbnail",
+          type: ApplicationCommandOptionType.String,
+          required: false,
+        },
+        {
+          name: "weapon",
+          description: "Set the default weapon damage",
+          type: ApplicationCommandOptionType.Integer,
+          required: false,
+        },
+        {
+          name: "armour",
+          description: "Set the default armour protection",
+          type: ApplicationCommandOptionType.Integer,
+          required: false,
+        },
+      ],
+    },
+  ],
+  run: async (
+    client: Client,
+    interaction: CommandInteraction,
+    prisma: PrismaClient,
+    database: DatabaseHelper,
+  ) => {
+    switch (interaction.options.data[0]?.name) {
+      case "create":
+        await createCharacter(client, interaction, prisma, database);
+        break;
+      case "details":
+        await showCharacter(client, interaction, prisma, database);
+        break;
+      case "set":
+        await setCharacter(client, interaction, prisma, database);
+        break;
+      case "ability":
+        await setAbility(client, interaction, prisma, database);
+        break;
+    }
+  },
 };
 
 const createCharacter = async (
-	client: Client,
-	interaction: CommandInteraction,
-	prisma: PrismaClient,
-	database: DatabaseHelper
+  client: Client,
+  interaction: CommandInteraction,
+  prisma: PrismaClient,
+  database: DatabaseHelper,
 ) => {
-	const campaign = await database.getCampaign(interaction);
+  const campaign = await database.getCampaign(interaction);
 
-	const existingCharacter: characters | null = await prisma.characters.findFirst({
-		where: {
-			campaignId: campaign.campaignId,
-			discordUserId: interaction.user.id,
-		},
-	});
+  const existingCharacter: characters | null =
+    await prisma.characters.findFirst({
+      where: {
+        campaignId: campaign.campaignId,
+        discordUserId: interaction.user.id,
+      },
+    });
 
-	if (existingCharacter) throw new Error("You already have a character in this server");
+  if (existingCharacter)
+    throw new Error("You already have a character in this server");
 
-	const name: string | undefined = interaction.options.get("name")?.value as string;
-	if (!name || name === "") throw new Error("Missing character name");
+  const name: string | undefined = interaction.options.get("name")
+    ?.value as string;
+  if (!name || name === "") throw new Error("Missing character name");
 
-	const content = new EmbedBuilder();
+  const content = new EmbedBuilder();
 
-	try {
-		const character: characters = await prisma.characters.create({
-			data: {
-				characterId: uuidToBuffer(randomUUID()),
-				campaignId: campaign.campaignId,
-				discordUserId: interaction.user.id,
-				name: name,
-			},
-		});
+  try {
+    const character: characters = await prisma.characters.create({
+      data: {
+        characterId: uuidToBuffer(randomUUID()),
+        campaignId: campaign.campaignId,
+        discordUserId: interaction.user.id,
+        name: name,
+      },
+    });
 
-		content
-			.setColor("#00ff00")
-			.setTitle(character.name)
-			.setDescription(`Character ${character.name} successfully created`);
-	} catch (error) {
-		content
-			.setColor("#ff0000")
-			.setTitle("Error")
-			.setDescription(`${bufferToUuid(campaign.campaignId)} ${interaction.user.id} ${name} ${error}`);
-	} finally {
-		await interaction.followUp({
-			embeds: [content],
-		});
-	}
+    content
+      .setColor(Colour.Green)
+      .setTitle(character.name)
+      .setDescription(`Character ${character.name} successfully created`);
+  } catch (error) {
+    content
+      .setColor(Colour.Red)
+      .setTitle("Error")
+      .setDescription(
+        `${bufferToUuid(campaign.campaignId)} ${
+          interaction.user.id
+        } ${name} ${error}`,
+      );
+  } finally {
+    await interaction.followUp({
+      embeds: [content],
+    });
+  }
 };
 
 const showCharacter = async (
-	client: Client,
-	interaction: CommandInteraction,
-	prisma: PrismaClient,
-	database: DatabaseHelper
+  client: Client,
+  interaction: CommandInteraction,
+  prisma: PrismaClient,
+  database: DatabaseHelper,
 ) => {
-	const discordUser: User | null = interaction.options.getUser("player");
+  const discordUser: User | null = interaction.options.getUser("player");
 
-	const character = await database.getCharacter(interaction, discordUser?.id);
+  const character = await database.getCharacter(interaction, discordUser?.id);
 
-	const content = new EmbedBuilder().setColor("#000000").setTitle(character.name);
-	if (character.thumbnail && character.thumbnail !== "") content.setThumbnail(character.thumbnail);
+  const content = new EmbedBuilder()
+    .setColor(Colour.Black)
+    .setTitle(character.name);
+  if (character.thumbnail && character.thumbnail !== "")
+    content.setThumbnail(character.thumbnail);
 
-	const fields = [];
+  const fields = [];
 
-	let healthModifier = 0;
+  let abilitiesField = "";
+  let abilitiesValueField = "";
 
-	let abilitiesField = "";
-	let abilitiesValueField = "";
+  let valueField = "";
 
-	let valueField = "";
+  let maxLength: number = 0;
+  AbilityHelper.getAbilityList().forEach(
+    (ability: { name: string; value: string }) => {
+      if (ability.name.length > maxLength) maxLength = ability.name.length;
+    },
+  );
 
-	let maxLength: number = 0;
-	AbilityHelper.getAbilityList().forEach((ability: { name: string; value: string }) => {
-		if (ability.name.length > maxLength) maxLength = ability.name.length;
-	});
+  AbilityHelper.getAbilityList().forEach(
+    (ability: { name: string; value: string }) => {
+      const characterAbility = character.characterAbilities.find(
+        (characterAbility: characterAbilities) =>
+          characterAbility.ability === ability.name,
+      );
 
-	AbilityHelper.getAbilityList().forEach((ability: { name: string; value: string }) => {
-		const characterAbility = character.characterAbilities.find(
-			(characterAbility: characterAbilities) => characterAbility.ability === ability.name
-		);
+      const passive = Math.floor((characterAbility?.value ?? 0) / 20);
 
-		const passive = Math.floor((characterAbility?.value ?? 0) / 20);
+      let value = characterAbility?.value.toString() ?? "0";
+      if (value.length === 1) value = " " + value;
 
-		let value = characterAbility?.value.toString() ?? "0";
-		if (value.length === 1) value = " " + value;
+      let abilityName = ability.name;
+      abilityName += " ".repeat(maxLength + 1 - abilityName.length);
 
-		let abilityName = ability.name;
-		abilityName += " ".repeat(maxLength + 1 - abilityName.length);
+      valueField += `\`${abilityName}\` \` ${passive} \` **${value}**\n`;
 
-		valueField += `\`${abilityName}\` \` ${passive} \` **${value}**\n`;
+      abilitiesField += `${ability.name}\n`;
+      abilitiesValueField += `${characterAbility?.value.toString() ?? "0"}${
+        passive === 0 ? "" : " (*" + passive.toString() + "*)"
+      }\n`;
+    },
+  );
 
-		abilitiesField += `${ability.name}\n`;
-		abilitiesValueField += `${characterAbility?.value.toString() ?? "0"}${
-			passive === 0 ? "" : " (*" + passive.toString() + "*)"
-		}\n`;
+  fields.push({
+    name: `Abilities`,
+    value: valueField,
+    inline: true,
+  });
 
-		if (ability.name.toLowerCase() === "athletics" || ability.name.toLowerCase() === "willpower")
-			healthModifier += Math.floor((characterAbility?.value ?? 0) / 20);
-	});
+  let attributes: string = AttributesOutputHelper.getHeroPoints(character);
+  attributes += AttributesOutputHelper.getBonusPoints(character);
+  attributes += AttributesOutputHelper.getHealth(character);
+  attributes += AttributesOutputHelper.getMana(character);
+  attributes += AttributesOutputHelper.getAttackDamage(character);
+  attributes += AttributesOutputHelper.getDefence(character);
 
-	fields.push({
-		name: `Abilities`,
-		value: valueField,
-		inline: true,
-	});
+  fields.push({
+    name: `Attributes`,
+    value: attributes,
+    inline: false,
+  });
 
-	// fields.push({
-	// 	name: `Ability`,
-	// 	value: abilitiesField,
-	// 	inline: true,
-	// });
+  try {
+    content.addFields(...fields);
+  } catch (error) {
+    console.log(error);
+  }
 
-	// fields.push({
-	// 	name: `Value (passive)`,
-	// 	value: abilitiesValueField,
-	// 	inline: true,
-	// });
-
-	const totalHealth = 20 + healthModifier;
-	const currentHealth = totalHealth - character.damages;
-
-	let attributes: string = "`Hero Points       ` **" + character.heroPoints.toString() + "**\n";
-	attributes += "`Bonus Points      ` **" + character.bonus.toString() + "**\n";
-	attributes += "`Health            ` **" + currentHealth.toString() + "**/" + totalHealth.toString() + "\n";
-	attributes += "`Attack Damage     ` **" + character.defaultWeaponDamage.toString() + "**\n";
-
-	fields.push({
-		name: `Attributes`,
-		value: attributes,
-		inline: false,
-	});
-
-	try {
-		content.addFields(...fields);
-	} catch (error) {
-		console.log(error);
-	}
-
-	await interaction.followUp({
-		embeds: [content],
-	});
+  await interaction.followUp({
+    embeds: [content],
+  });
 };
 
 const setCharacter = async (
-	client: Client,
-	interaction: CommandInteraction,
-	prisma: PrismaClient,
-	database: DatabaseHelper
+  client: Client,
+  interaction: CommandInteraction,
+  prisma: PrismaClient,
+  database: DatabaseHelper,
 ) => {
-	const character: characters = await database.getCharacter(interaction);
+  const character: characters = await database.getCharacter(interaction);
 
-	const data: any = {};
+  const data: any = {};
 
-	const name: string | undefined = interaction.options.get("name")?.value as string;
-	if (name && name !== "") data.name = name;
+  const name: string | undefined = interaction.options.get("name")
+    ?.value as string;
+  if (name && name !== "") data.name = name;
 
-	const damage: number | undefined = interaction.options.get("damage")?.value as number;
-	if (damage && damage > 0) data.damage = damage;
+  const damage: number | undefined = interaction.options.get("damage")
+    ?.value as number;
+  if (damage && damage > 0) data.damages = damage;
 
-	const weapon: number | undefined = interaction.options.get("weapon")?.value as number;
-	if (weapon && weapon > 0) data.defaultWeaponDamage = weapon;
+  const weapon: number | undefined = interaction.options.get("weapon")
+    ?.value as number;
+  if (weapon && weapon > 0) data.defaultWeaponDamage = weapon;
 
-	const thumbnail: string | undefined = interaction.options.get("thumbnail")?.value as string;
-	if (thumbnail && thumbnail !== "") data.thumbnail = thumbnail;
+  const armour: number | undefined = interaction.options.get("armour")
+    ?.value as number;
+  if (armour && armour > 0) data.defaultArmourValue = armour;
 
-	await prisma.characters.update({
-		where: {
-			characterId: character.characterId,
-		},
-		data: data,
-	});
+  const thumbnail: string | undefined = interaction.options.get("thumbnail")
+    ?.value as string;
+  if (thumbnail && thumbnail !== "") data.thumbnail = thumbnail;
 
-	await showCharacter(client, interaction, prisma, database);
+  await prisma.characters.update({
+    where: {
+      characterId: character.characterId,
+    },
+    data: data,
+  });
+
+  await showCharacter(client, interaction, prisma, database);
 };
 
 const setAbility = async (
-	client: Client,
-	interaction: CommandInteraction,
-	prisma: PrismaClient,
-	database: DatabaseHelper
+  client: Client,
+  interaction: CommandInteraction,
+  prisma: PrismaClient,
+  database: DatabaseHelper,
 ) => {
-	const character: characters & { characterAbilities: characterAbilities[] } = await database.getCharacter(interaction);
+  const character: characters & { characterAbilities: characterAbilities[] } =
+    await database.getCharacter(interaction);
 
-	const abilityValue: number | undefined = interaction.options.get("value")?.value as number;
+  const abilityValue: number | undefined = interaction.options.get("value")
+    ?.value as number;
 
-	const abilityName: AbilityType = (interaction.options.get("name")?.value?.toString() ?? "") as AbilityType;
-	if (!AbilityHelper.checkAbilityExists(abilityName)) throw new Error("Ability not found");
+  const abilityName: AbilityType = (interaction.options
+    .get("name")
+    ?.value?.toString() ?? "") as AbilityType;
+  if (!AbilityHelper.checkAbilityExists(abilityName))
+    throw new Error("Ability not found");
 
-	const characterAbility = character.characterAbilities.find(
-		(characterAbility: characterAbilities) => characterAbility.ability === abilityName
-	);
+  const characterAbility = character.characterAbilities.find(
+    (characterAbility: characterAbilities) =>
+      characterAbility.ability === abilityName,
+  );
 
-	if (!characterAbility) {
-		await prisma.characterAbilities.create({
-			data: {
-				characterAbilityId: uuidToBuffer(randomUUID()),
-				characterId: character.characterId,
-				ability: abilityName,
-				value: abilityValue,
-			},
-		});
-	} else {
-		await prisma.characterAbilities.update({
-			where: {
-				characterAbilityId: characterAbility.characterAbilityId,
-			},
-			data: {
-				value: abilityValue,
-			},
-		});
-	}
+  if (!characterAbility) {
+    await prisma.characterAbilities.create({
+      data: {
+        characterAbilityId: uuidToBuffer(randomUUID()),
+        characterId: character.characterId,
+        ability: abilityName,
+        value: abilityValue,
+      },
+    });
+  } else {
+    await prisma.characterAbilities.update({
+      where: {
+        characterAbilityId: characterAbility.characterAbilityId,
+      },
+      data: {
+        value: abilityValue,
+      },
+    });
+  }
 
-	await showCharacter(client, interaction, prisma, database);
+  await showCharacter(client, interaction, prisma, database);
 };
