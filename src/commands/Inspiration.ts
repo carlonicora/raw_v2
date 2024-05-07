@@ -66,7 +66,7 @@ const assignInspiration = async (
     },
   });
 
-  let description = `${discordUser}, your character ${character.name} received an inspration and 3 hero points.`;
+  let description = `${discordUser}, your character ${character.name} received an inspration and 1 hero points.`;
   const reason: string | null = interaction.options.get("reason")
     ?.value as string;
   if (reason) description += `\n\nReason: ${reason}`;
